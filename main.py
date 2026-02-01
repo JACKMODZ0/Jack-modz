@@ -1,21 +1,23 @@
+import os
 import asyncio
 import requests
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, ContextTypes
 
-BOT_TOKEN = "7840587350:AAGq_IH6ZM2IOVD9Ih1rnzWdOauUCf42we4" 
 PING_INTERVAL = 3600  # 1 hour
 
 codespace_url = None
 chat_id = None
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # Railway variable
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global chat_id
     chat_id = update.effective_chat.id
 
     await update.message.reply_text(
-        "🤖 Bot ready!\n\n"
-        "Codespace URL set karne ke liye:\n"
+        "🤖 Bot started!\n\n"
+        "URL set karne ke liye:\n"
         "/seturl https://your-codespace-url"
     )
 
@@ -31,45 +33,39 @@ async def seturl(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     codespace_url = context.args[0]
     await update.message.reply_text(
-        f"✅ URL set ho gaya:\n{codespace_url}\n\n"
-        "Ab har 1 ghante ping status bheja jayega."
+        f"✅ URL saved:\n{codespace_url}\n\n"
+        "Ab har 1 ghante ping status aayega."
     )
 
-async def ping_codespace(app):
+async def ping_job(app: Application):
     global codespace_url, chat_id
 
     while True:
         if codespace_url and chat_id:
             try:
                 r = requests.get(codespace_url, timeout=15)
+
                 if r.status_code == 200:
-                    await app.bot.send_message(
-                        chat_id=chat_id,
-                        text=f"✅ Ping SUCCESS\n{codespace_url}\nStatus: {r.status_code}"
-                    )
+                    msg = f"✅ Ping SUCCESS\n{codespace_url}\nStatus: 200"
                 else:
-                    await app.bot.send_message(
-                        chat_id=chat_id,
-                        text=f"⚠️ Ping FAILED\n{codespace_url}\nStatus: {r.status_code}"
-                    )
+                    msg = f"⚠️ Ping FAILED\n{codespace_url}\nStatus: {r.status_code}"
 
             except Exception as e:
-                await app.bot.send_message(
-                    chat_id=chat_id,
-                    text=f"❌ Ping ERROR\n{codespace_url}\nError: {str(e)}"
-                )
+                msg = f"❌ Ping ERROR\n{codespace_url}\n{e}"
+
+            await app.bot.send_message(chat_id=chat_id, text=msg)
         else:
-            print("[WAIT] URL ya chat_id set nahi")
+            print("⏳ Waiting for /seturl")
 
         await asyncio.sleep(PING_INTERVAL)
 
 async def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app = Application.builder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("seturl", seturl))
 
-    asyncio.create_task(ping_codespace(app))
+    asyncio.create_task(ping_job(app))
 
     print("✅ Bot running...")
     await app.run_polling()
