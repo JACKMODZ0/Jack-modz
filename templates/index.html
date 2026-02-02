@@ -1,164 +1,171 @@
 {% extends "base.html" %}
 
-{% block title %}Crypto Hunter - Home{% endblock %}
+{% block title %}Home - Crypto Prices & Market Stats{% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- Market Overview -->
+<!-- Market Overview -->
+<div class="row mb-4">
     <div class="col-12">
-        <div class="card mb-4">
+        <div class="card shadow">
             <div class="card-header bg-primary text-white">
-                <h4><i class="fas fa-chart-bar"></i> Market Overview</h4>
+                <h4 class="mb-0"><i class="fas fa-globe"></i> Market Overview</h4>
             </div>
             <div class="card-body">
                 <div class="row text-center">
                     <div class="col-md-3 mb-3">
                         <div class="p-3 bg-light rounded">
                             <h6 class="text-muted">Total Market Cap</h6>
-                            <h3>${{ "{:,.0f}".format(market_data.total_market_cap / 1000000000) }}B</h3>
-                            <span class="text-success"><i class="fas fa-arrow-up"></i> {{ market_data.market_cap_change }}%</span>
+                            <h3>${{ "{:,.1f}".format(market_stats.total_market_cap / 1000000000) }}B</h3>
+                            <small class="text-success"><i class="fas fa-arrow-up"></i> {{ market_stats.market_cap_change }}%</small>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="p-3 bg-light rounded">
                             <h6 class="text-muted">24h Volume</h6>
-                            <h3>${{ "{:,.0f}".format(market_data.total_volume / 1000000000) }}B</h3>
+                            <h3>${{ "{:,.1f}".format(market_stats.total_volume / 1000000000) }}B</h3>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="p-3 bg-light rounded">
                             <h6 class="text-muted">BTC Dominance</h6>
-                            <h3>{{ market_data.btc_dominance }}%</h3>
+                            <h3>{{ market_stats.btc_dominance }}%</h3>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="p-3 bg-light rounded">
                             <h6 class="text-muted">Market Sentiment</h6>
-                            <h3 class="{{ 'text-success' if market_data.sentiment == 'Bullish' else 'text-danger' if market_data.sentiment == 'Bearish' else 'text-warning' }}">
-                                {{ market_data.sentiment }}
+                            <h3 class="{% if market_stats.sentiment == 'Bullish' %}text-success{% else %}text-danger{% endif %}">
+                                {{ market_stats.sentiment }}
                             </h3>
-                            <small>Fear & Greed: {{ market_data.fear_greed }}/100</small>
+                            <small>{{ market_stats.positive_coins }}↑ / {{ market_stats.negative_coins }}↓</small>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Top Gainers -->
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white">
-                <h5><i class="fas fa-arrow-up"></i> Top Gainers (24h)</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Coin</th>
-                                <th>Price</th>
-                                <th>24h Change</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for crypto in top_gainers %}
-                            <tr>
-                                <td>
-                                    <a href="/crypto/{{ crypto.id }}" class="text-decoration-none">
-                                        <img src="{{ crypto.image }}" alt="{{ crypto.name }}" style="width: 20px; height: 20px;">
-                                        <strong class="ms-2">{{ crypto.symbol }}</strong>
-                                        <small class="text-muted">{{ crypto.name[:15] }}{% if crypto.name|length > 15 %}...{% endif %}</small>
-                                    </a>
-                                </td>
-                                <td>${{ "{:,.2f}".format(crypto.price_usd) }}</td>
-                                <td class="text-success">
-                                    <i class="fas fa-arrow-up"></i> {{ "{:.2f}".format(crypto.change_24h) }}%
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Top Losers -->
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header bg-danger text-white">
-                <h5><i class="fas fa-arrow-down"></i> Top Losers (24h)</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Coin</th>
-                                <th>Price</th>
-                                <th>24h Change</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for crypto in top_losers %}
-                            <tr>
-                                <td>
-                                    <a href="/crypto/{{ crypto.id }}" class="text-decoration-none">
-                                        <img src="{{ crypto.image }}" alt="{{ crypto.name }}" style="width: 20px; height: 20px;">
-                                        <strong class="ms-2">{{ crypto.symbol }}</strong>
-                                        <small class="text-muted">{{ crypto.name[:15] }}{% if crypto.name|length > 15 %}...{% endif %}</small>
-                                    </a>
-                                </td>
-                                <td>${{ "{:,.2f}".format(crypto.price_usd) }}</td>
-                                <td class="text-danger">
-                                    <i class="fas fa-arrow-down"></i> {{ "{:.2f}".format(crypto.change_24h) }}%
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Stats -->
+<!-- Top Cryptocurrencies -->
+<div class="row mb-4">
     <div class="col-12">
-        <div class="card">
+        <div class="card shadow">
             <div class="card-header">
-                <h5><i class="fas fa-info-circle"></i> About Crypto Hunter</h5>
+                <h4 class="mb-0"><i class="fas fa-coins"></i> Top Cryptocurrencies</h4>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 text-center mb-3">
-                        <div class="p-3 border rounded">
-                            <i class="fas fa-sync-alt fa-2x text-primary mb-2"></i>
-                            <h5>Real-time Data</h5>
-                            <p class="text-muted">Live prices from multiple exchanges</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4 text-center mb-3">
-                        <div class="p-3 border rounded">
-                            <i class="fas fa-chart-pie fa-2x text-success mb-2"></i>
-                            <h5>Portfolio Tracking</h5>
-                            <p class="text-muted">Track your investments and profits</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4 text-center mb-3">
-                        <div class="p-3 border rounded">
-                            <i class="fas fa-bell fa-2x text-warning mb-2"></i>
-                            <h5>Price Alerts</h5>
-                            <p class="text-muted">Get notified of price changes</p>
-                        </div>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>24h Change</th>
+                                <th>Market Cap</th>
+                                <th>24h Volume</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for crypto in cryptos %}
+                            <tr>
+                                <td>{{ crypto.rank }}</td>
+                                <td>
+                                    <img src="{{ crypto.image }}" alt="{{ crypto.name }}" style="width: 24px; height: 24px;">
+                                    <strong class="ms-2">{{ crypto.name }}</strong>
+                                    <small class="text-muted">({{ crypto.symbol }})</small>
+                                </td>
+                                <td>${{ "{:,.2f}".format(crypto.price) }}</td>
+                                <td class="{% if crypto.change_24h >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    <i class="fas {% if crypto.change_24h >= 0 %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
+                                    {{ "{:.2f}".format(crypto.change_24h) }}%
+                                </td>
+                                <td>${{ "{:,.0f}".format(crypto.market_cap) }}</td>
+                                <td>${{ "{:,.0f}".format(crypto.volume) }}</td>
+                                <td>
+                                    <a href="/crypto/{{ crypto.id }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-chart-line"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
                 <div class="text-center mt-3">
-                    <a href="/market" class="btn btn-primary btn-lg">
-                        <i class="fas fa-rocket"></i> Explore Cryptocurrencies
+                    <a href="/market" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> View All Cryptocurrencies
                     </a>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gainers & Losers -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-arrow-up"></i> Top Gainers (24h)</h5>
+            </div>
+            <div class="card-body">
+                {% for crypto in gainers %}
+                <div class="d-flex justify-content-between align-items-center mb-3 p-2 border-bottom">
+                    <div>
+                        <img src="{{ crypto.image }}" alt="{{ crypto.name }}" style="width: 24px; height: 24px;">
+                        <strong class="ms-2">{{ crypto.symbol }}</strong>
+                        <small class="text-muted">{{ crypto.name }}</small>
+                    </div>
+                    <div class="text-success">
+                        <strong>+{{ "{:.2f}".format(crypto.change_24h) }}%</strong>
+                        <br>
+                        <small>${{ "{:,.2f}".format(crypto.price) }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-arrow-down"></i> Top Losers (24h)</h5>
+            </div>
+            <div class="card-body">
+                {% for crypto in losers %}
+                <div class="d-flex justify-content-between align-items-center mb-3 p-2 border-bottom">
+                    <div>
+                        <img src="{{ crypto.image }}" alt="{{ crypto.name }}" style="width: 24px; height: 24px;">
+                        <strong class="ms-2">{{ crypto.symbol }}</strong>
+                        <small class="text-muted">{{ crypto.name }}</small>
+                    </div>
+                    <div class="text-danger">
+                        <strong>{{ "{:.2f}".format(crypto.change_24h) }}%</strong>
+                        <br>
+                        <small>${{ "{:,.2f}".format(crypto.price) }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Info Box -->
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h5><i class="fas fa-info-circle"></i> How Crypto Hunter Works</h5>
+            <p>Crypto Hunter uses free public APIs to fetch real-time cryptocurrency data. When online, it fetches live data from CoinGecko. When offline or if APIs fail, it uses sample data with realistic variations.</p>
+            <ul>
+                <li><strong>No API Key Required</strong> - Completely free to use</li>
+                <li><strong>Real-time Updates</strong> - Auto-refreshes every 30 seconds</li>
+                <li><strong>Portfolio Tracking</strong> - Track your investments</li>
+                <li><strong>Detailed Analysis</strong> - View charts and statistics</li>
+            </ul>
         </div>
     </div>
 </div>
