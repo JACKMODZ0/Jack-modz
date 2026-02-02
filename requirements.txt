@@ -1,8 +1,15 @@
+# Web Framework
 Flask==3.0.0
 Flask-SQLAlchemy==3.1.1
-requests==2.31.0
-pandas==2.1.4
-plotly==5.18.0
 python-dotenv==1.0.0
+
+# Lightweight Data Processing (no pandas)
+numpy==1.24.4  # Older version compatible with Python 3.11
+
+# Cryptocurrency APIs
+requests==2.31.0
 beautifulsoup4==4.12.2
 lxml==4.9.3
+
+# Charts (optional, can remove if causing issues)
+plotly==5.18.0
