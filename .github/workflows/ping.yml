@@ -1,0 +1,14 @@
+name: Keep Codespace Alive
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # har 30 minute
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Server
+        run: |
+          curl -I https://super-duper-halibut-7v47vv6v9r54hr7jw.github.dev/ || true
